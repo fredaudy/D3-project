@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Test de D3</title>
+        <!--        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>-->
+        <script src="d3/d3.js" type="text/javascript"></script>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <h1>Test de la librairie D3</h1>
+        <input type="file" id="files" name="files[]" multiple />
+        <output id="list"></output>
+
+        <p>liens utiles: </p><a href="http://d3js.org/">http://d3js.org/</a>
+        <p>texte 2222222222 </p>
+        <p>texte 33333333333 </p>
+
+        <svg width="720" height="120">
+        <circle cx="30" cy="60" r="5.656854249492381" style="fill:steelblue;"></circle>
+        <circle cx="130" cy="60" r="7.54983443527075" style="fill:steelblue;"></circle>
+        <circle cx="230" cy="60" r="10.583005244258363" style="fill:steelblue;"></circle>
+        </svg>
+
+        <script type="text/javascript">
+            var jsonFile;
+            var jsonPath;
+            var data; // global
+
+            //pour selectionner le fichier json
+            function handleFileSelect(evt) {
+                var files = evt.target.files; // FileList object
+
+                // files is a FileList of File objects. List some properties.
+                var output = [];
+                for (var i = 0, f; f = files[i]; i++) {
+                    output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+                            f.size, ' bytes, last modified: ',
+                            f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+                            '</li>');
+                    jsonFile = f.name;
+                    jsonPath = "./datas/" + jsonFile;
+                    console.log(jsonPath);
+                    jsonRecup(jsonPath);
+                }
+                document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+            }
+
+            document.getElementById('files').addEventListener('change', handleFileSelect, false);
+
+
+            function jsonRecup(jsonPath){
+                //récup des données du fichier json
+                d3.json(jsonPath, function(error, json) {
+                    if (error)
+                        return console.warn(error);
+                    data = json;
+                    console.log(d3.select("body").append("svg").attr("width", 200).attr("height", 200).selectAll("circle").data(json).enter().append("circle"));
+                    //  visualizeit();
+                });
+            }
+
+
+            var svg = d3.select("svg");
+            var circle = svg.selectAll("circle")
+                    .data([32, 57, 293], function(d) {
+                        return d;
+                    });
+
+            circle.enter().append("circle")
+                    .attr("cy", 60)
+                    .attr("cx", function(d, i) {
+                        return i * 100 + 30;
+                    })
+                    .attr("r", function(d) {
+                        return Math.sqrt(d);
+                    });
+
+            circle.exit().remove();
+
+//            var circleEnter = circle.enter().append("circle");
+
+//            circleEnter.attr("cy", 60);
+//            circleEnter.attr("cx", function(d, i) {
+//                return i * 100 + 30;
+//            });
+//            circleEnter.attr("r", function(d) {
+//                return Math.sqrt(d);
+//            });
+
+//            circleEnter.transition()
+//                  .duration(750)
+//                  .attr("cx", function(d){
+//               return d*2.5; 
+//            });
+
+
+        </script>
+    </body>
+
+</html>
