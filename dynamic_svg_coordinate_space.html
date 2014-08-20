@@ -17,12 +17,30 @@ and open the template in the editor.
         <input type="file" id="files" name="files[]" multiple />
         <output id="list"></output>
 
+        <form>
+            <label>x_axis</label>
+            <select name="x_axis" id="x_axis" class="defListForm">
+            </select>
+            <label>y_axis</label>
+            <select name="y_axis" id="y_axis" class="defListForm">
+            </select>
+            <label>rayon</label>
+            <select name="height" id="rayon" class="defListForm">
+            </select>
+            <input type="button" value="appliquer" name="appliquer" id="appliquer"/>
+        </form>
+
 
 
         <script type="text/javascript">
             var jsonFile;
             var jsonPath;
             var jsonData; // global
+
+            var listSelectForm;
+            var x_axis;
+            var y_axis;
+            var rayon;
 
             var svgContainer;
             var rectangles;
@@ -43,7 +61,7 @@ and open the template in the editor.
                             '</li>');
                     jsonFile = f.name;
                     jsonPath = "./datas/" + jsonFile;
-        //            console.log(jsonPath);
+                    //            console.log(jsonPath);
                     jsonRecup(jsonPath);
                 }
                 document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
@@ -51,67 +69,113 @@ and open the template in the editor.
 
             document.getElementById('files').addEventListener('change', handleFileSelect, false);
 
+            
+            function completeForm(element, index, array) {
+                listSelectForm += '<option value="' + element + '">' + element + '</option>';
+            }
+            
 
             function jsonRecup(jsonPath) {
                 //récup des données du fichier json
                 d3.json(jsonPath, function(error, json) {
-                    
-                    if (error) return console.warn(error);
-                    
-                    console.log(json);
 
-                    createSvgScale(json);
-                    createRect(json);
+                    if (error)
+                        return console.warn(error);
+                    
+                    var tabProprietes = Object.keys(json[0]);
+                    
+                    console.log(tabProprietes);
+                    
+                    
+                    tabProprietes.forEach(completeForm);
+                    document.getElementById('x_axis').innerHTML = listSelectForm;
+                    document.getElementById('y_axis').innerHTML = listSelectForm;
+                    document.getElementById('rayon').innerHTML = listSelectForm;
 
+                    jsonData = json;
                 });
             }
+            
+            function defVariables(){
+                var tagSelectXaxis = document.getElementById('x_axis');
+                var selectIndexXaxis = tagSelectXaxis.options[tagSelectXaxis.selectedIndex].value;
+                
+                var tagSelectYaxis = document.getElementById('y_axis');
+                var selectIndexYaxis = tagSelectYaxis.options[tagSelectYaxis.selectedIndex].value;
+                
+                var tagSelectRayon = document.getElementById('rayon');
+                var selectIndexRayon = tagSelectRayon.options[tagSelectRayon.selectedIndex].value;
+                
+                x_axis = selectIndexXaxis;
+                y_axis = selectIndexYaxis;
+                rayon = selectIndexRayon;
+                
+                console.log(x_axis + ' ### ' + y_axis + ' ### ' + rayon);
+                
+                createSvgScale();
+                createCircle();
+
+            }
+            
+            document.getElementById('appliquer').addEventListener('click', defVariables, false)
 
             //creation de la balise <svg>
-            function createSvgScale(jsonData) {
-                 var XInitialData = [];
-                 var YInitialData = [];
-                 
+            function createSvgScale() {
+                var XInitialData = [];
+                var YInitialData = [];
+                var RInitialData = [];
+
                 //calcul des coord max des axes
                 for (i = 0; i < jsonData.length; ++i) {
-                    XInitialData[i] = jsonData[i].x_axis;
-                    YInitialData[i] = jsonData[i].y_axis;
+                    XInitialData[i] = jsonData[i][x_axis];
+                    YInitialData[i] = jsonData[i][y_axis];
+                    RInitialData[i] = jsonData[i][rayon];
                 }
-               
+
 
                 var XMinDataPoint = d3.min(XInitialData);
                 var XMaxDataPoint = d3.max(XInitialData);
-                
+
                 var YMinDataPoint = d3.min(YInitialData);
                 var YMaxDataPoint = d3.max(YInitialData);
+                
+                var RMinDataPoint = d3.min(RInitialData);
+                var RMaxDataPoint = d3.max(RInitialData);
 
                 //on modifie l'échelle des abscisses et ordonnées
-                var XLinearScale = d3.scale.linear()
+                var XLinearScale = d3.scale.log()
                         .domain([XMinDataPoint, XMaxDataPoint])
-                        .range([0, 300]);
-                
-                var YLinearScale = d3.scale.linear()
+                        .range([0, 700]);
+
+                var YLinearScale = d3.scale.log()
                         .domain([YMinDataPoint, YMaxDataPoint])
                         .range([0, 300]);
+                
+                var RLinearScale = d3.scale.log()
+                        .domain([RMinDataPoint, RMaxDataPoint])
+                        .range([3, 20]);
 
-                //recalcule de chaque points (x,y) dans la nouvelle échelle de coordonnées       
+                //recalcule de chaque point (x,y) dans la nouvelle échelle de coordonnées       
                 for (var i = 0; i < jsonData.length; i++) {
-                    jsonData[i].x_axis = XLinearScale(jsonData[i].x_axis);
-                    jsonData[i].y_axis = YLinearScale(jsonData[i].y_axis);
+                    jsonData[i][x_axis] = XLinearScale(jsonData[i][x_axis]);
+                    jsonData[i][y_axis] = YLinearScale(jsonData[i][y_axis]);
+                    jsonData[i][rayon] = RLinearScale(jsonData[i][rayon]);
+                    console.log(jsonData[i][rayon]);
                 }
-                
-                createSvg(jsonData);
-                
+
+                createSvg();
+
             }
 
             //creation de la balise <svg>
-            function createSvg(jsonData) {
+            function createSvg() {
                 var max_x = 0;
                 var max_y = 0;
 
                 //calcul des coord max des axes
                 for (i = 0; i < jsonData.length; ++i) {
-                    var temp_x = jsonData[i].x_axis + jsonData[i].width;
-                    var temp_y = jsonData[i].y_axis + jsonData[i].height;
+                    var temp_x = jsonData[i][x_axis] //+ jsonData[i].width;
+                    var temp_y = jsonData[i][y_axis] //+ jsonData[i].height;
 
                     if (max_x < temp_x) {
                         max_x = temp_x;
@@ -128,27 +192,25 @@ and open the template in the editor.
 
             }
 
-            //création des balises <rect> en fonction des données du fichier Json
-            function createRect(jsonData) {
+            //création des balises <circle> en fonction des données du fichier Json
+            function createCircle() {
 
-                rectangles = svgContainer.selectAll("rect").data(jsonData).enter().append("rect");
+                rectangles = svgContainer.selectAll("circle").data(jsonData).enter().append("circle");
                 console.log(rectangles);
 
                 rectanglesAttr = rectangles
-                        .attr("x", function(d) {
-                            return d.x_axis;
+                        .attr("cx", function(d) {
+                            return d[x_axis];
                         })
-                        .attr("y", function(d) {
-                            return d.y_axis;
+                        .attr("cy", function(d) {
+                            return 300-d[y_axis];
                         })
-                        .attr("height", function(d) {
-                            return d.height;
-                        })
-                        .attr("width", function(d) {
-                            return d.width;
+                        .attr("r", function(d) {
+                            return 20;
                         })
                         .attr("fill", function(d) {
-                            return d.color;
+//                            return d.color;
+                            return "green";
                         })
                 console.log(rectanglesAttr);
             }
