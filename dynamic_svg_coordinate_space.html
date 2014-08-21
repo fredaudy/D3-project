@@ -11,6 +11,7 @@ and open the template in the editor.
         <script src="d3/d3.js" type="text/javascript"></script>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="./styleBase.css"/>
     </head>
     <body>
         <h1>Test de la librairie D3</h1>
@@ -29,6 +30,8 @@ and open the template in the editor.
             </select>
             <input type="button" value="appliquer" name="appliquer" id="appliquer"/>
         </form>
+        
+        <input type="button" value="retombeées focal" name="rayon" id="rayon"/>
 
 
 
@@ -42,9 +45,14 @@ and open the template in the editor.
             var y_axis;
             var rayon;
 
+            var XLinearScale;
+            var YLinearScale;
+            var RLinearScale;
+
             var svgContainer;
-            var rectangles;
-            var rectanglesAttr;
+            var formes;
+            var formesAttr;
+            var maxRayon = 30;
 
 
 
@@ -117,7 +125,7 @@ and open the template in the editor.
 
             }
             
-            document.getElementById('appliquer').addEventListener('click', defVariables, false)
+            document.getElementById('appliquer').addEventListener('click', defVariables, false);
 
             //creation de la balise <svg>
             function createSvgScale() {
@@ -127,9 +135,9 @@ and open the template in the editor.
 
                 //calcul des coord max des axes
                 for (i = 0; i < jsonData.length; ++i) {
-                    XInitialData[i] = jsonData[i][x_axis];
-                    YInitialData[i] = jsonData[i][y_axis];
-                    RInitialData[i] = jsonData[i][rayon];
+                    XInitialData[i] = +jsonData[i][x_axis];
+                    YInitialData[i] = +jsonData[i][y_axis];
+                    RInitialData[i] = +jsonData[i][rayon];
                 }
 
 
@@ -143,24 +151,23 @@ and open the template in the editor.
                 var RMaxDataPoint = d3.max(RInitialData);
 
                 //on modifie l'échelle des abscisses et ordonnées
-                var XLinearScale = d3.scale.log()
+                XLinearScale = d3.scale.log()
                         .domain([XMinDataPoint, XMaxDataPoint])
                         .range([0, 700]);
 
-                var YLinearScale = d3.scale.log()
+                YLinearScale = d3.scale.log()
                         .domain([YMinDataPoint, YMaxDataPoint])
-                        .range([0, 300]);
+                        .range([300, 0]);
                 
-                var RLinearScale = d3.scale.log()
+                RLinearScale = d3.scale.log()
                         .domain([RMinDataPoint, RMaxDataPoint])
-                        .range([3, 20]);
+                        .range([3, maxRayon]);
 
                 //recalcule de chaque point (x,y) dans la nouvelle échelle de coordonnées       
                 for (var i = 0; i < jsonData.length; i++) {
-                    jsonData[i][x_axis] = XLinearScale(jsonData[i][x_axis]);
-                    jsonData[i][y_axis] = YLinearScale(jsonData[i][y_axis]);
-                    jsonData[i][rayon] = RLinearScale(jsonData[i][rayon]);
-                    console.log(jsonData[i][rayon]);
+                    jsonData[i][x_axis] = XLinearScale(+jsonData[i][x_axis]);
+                    jsonData[i][y_axis] = YLinearScale(+jsonData[i][y_axis]);
+                    jsonData[i][rayon] = RLinearScale(+jsonData[i][rayon]);
                 }
 
                 createSvg();
@@ -168,14 +175,14 @@ and open the template in the editor.
             }
 
             //creation de la balise <svg>
-            function createSvg() {
+            function createSvg(plusAbscisses) {
                 var max_x = 0;
                 var max_y = 0;
 
                 //calcul des coord max des axes
                 for (i = 0; i < jsonData.length; ++i) {
-                    var temp_x = jsonData[i][x_axis] //+ jsonData[i].width;
-                    var temp_y = jsonData[i][y_axis] //+ jsonData[i].height;
+                    var temp_x = jsonData[i][x_axis] + maxRayon;
+                    var temp_y = jsonData[i][y_axis] + maxRayon;
 
                     if (max_x < temp_x) {
                         max_x = temp_x;
@@ -187,33 +194,67 @@ and open the template in the editor.
 
                 }
 
-                svgContainer = d3.select("body").append("svg").attr("width", max_x).attr("height", max_y);
-                console.log(svgContainer);
+                svgContainer = d3.select("body").append("svg")
+                                                .attr("transform", "translate(" + 2*maxRayon + "," + 2*maxRayon + ")")
+                                                .attr("width", (700 + 4*maxRayon))
+                                                .attr("height", (300 + 4*maxRayon));
+                
+                var xAxis = d3.svg.axis()
+                        .scale(XLinearScale)
+           //             .ticks(500000, "d")
+                        .orient("bottom");
+                var yAxis = d3.svg.axis()
+                        .scale(YLinearScale)
+           //             .ticks(500000, "d")
+                        .orient("left");
+                
+                var xAxisGroup = svgContainer.append("g")
+                    .attr("transform", "translate(0," + 300 + ")")    
+                    .call(xAxis);
+                var yAxisGroup = svgContainer.append("g")
+                    .attr("transform", "translate(0,0)")    
+                    .call(yAxis);
+                
+                console.log(xAxis);
 
             }
 
             //création des balises <circle> en fonction des données du fichier Json
             function createCircle() {
 
-                rectangles = svgContainer.selectAll("circle").data(jsonData).enter().append("circle");
-                console.log(rectangles);
+                formes = svgContainer.selectAll("circle").data(jsonData).enter().append("circle");
+//                console.log(formes);
 
-                rectanglesAttr = rectangles
+                formesAttr = formes
                         .attr("cx", function(d) {
-                            return d[x_axis];
+                            return maxRayon+d[x_axis];
                         })
                         .attr("cy", function(d) {
-                            return 300-d[y_axis];
+                            return d[y_axis];
                         })
                         .attr("r", function(d) {
-                            return 20;
+                            return 3;
+//                            return d[rayon];
                         })
                         .attr("fill", function(d) {
 //                            return d.color;
                             return "green";
-                        })
-                console.log(rectanglesAttr);
+                        });
+                        
+//                animRayons(formes);
+//                console.log(rectanglesAttr);
             }
+            
+            
+            function animRayons(formes){
+                formes.transition()
+                        .attr("r", function(d){ return d[rayon];})
+                        .duration(1200)
+                        .delay(200)
+                        .ease("elastic");
+            }
+            
+//            document.getElementById('rayon').addEventListener('click', animRayons(formes), false);
 
         </script>
     </body>

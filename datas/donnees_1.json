@@ -130,7 +130,7 @@
         "Nom du blog ": "ForumHardware.fr",
         "Total de visites mensuelles ": 4950000,
         "Liens externes ": 393915,
-        "Nombre retombe_es Focal ": "10 000",
+        "Nombre retombe_es Focal ": "10000",
         "Sous division": "High Tech",
         "Ligne editoriale": "Semi spé"
     },
@@ -162,7 +162,7 @@
         "Nom du blog ": "HDfever.fr",
         "Total de visites mensuelles ": 300000,
         "Liens externes ": 163000,
-        "Nombre retombe_es Focal ": "12 000 ",
+        "Nombre retombe_es Focal ": "12000 ",
         "Sous division": "Cinéphiles",
         "Ligne editoriale": "Spécialisé"
     },
@@ -194,7 +194,7 @@
         "Nom du blog ": "http://audiophilefr.com/",
         "Total de visites mensuelles ": 20000,
         "Liens externes ": 5000,
-        "Nombre retombe_es Focal ": "10 000",
+        "Nombre retombe_es Focal ": "10000",
         "Sous division": "Audiophiles",
         "Ligne editoriale": "Spécialisé "
     },
@@ -250,7 +250,7 @@
         "Nom du blog ": "Le-homecinema.com",
         "Total de visites mensuelles ": 80000,
         "Liens externes ": 66000,
-        "Nombre retombe_es Focal ": "36 000",
+        "Nombre retombe_es Focal ": "36000",
         "Sous division": "Cinéphiles",
         "Ligne editoriale": "Spécialisé"
     },
@@ -309,12 +309,4 @@
         "Nombre retombe_es Focal ": "16800",
         "Sous division": "High Tech",
         "Ligne editoriale": "Semi spé"
-    },
-    {
-        "Nom du blog ": "",
-        "Total de visites mensuelles ": null,
-        "Liens externes ": null,
-        "Nombre retombe_es Focal ": "",
-        "Sous division": "",
-        "Ligne editoriale": ""
     }]
